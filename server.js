@@ -8,9 +8,13 @@ const moment = require('moment');
 const app = express();
 const PORT = 3000;
 
+
 // Middleware para parsear el cuerpo de las solicitudes como JSON
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  exposedHeaders: 'Referer'
+}));
 
 app.use((req, res, next) => {
   res.set('Cache-Control', 'no-store');
