@@ -4,13 +4,25 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 const moment = require('moment');
+const https = require('https');
 
 const app = express();
-const PORT = 3000;
+const PORT = 443;
+
 
 
 // Middleware para parsear el cuerpo de las solicitudes como JSON
 app.use(express.json());
+
+// Ruta para leer el certificado y la clave privada
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/encuestadores.cristianayala.cl/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/encuestadores.cristianayala.cl/fullchain.pem', 'utf8');
+
+const options = {
+  key: privateKey,
+  cert: certificate,
+};
+
 app.use(cors({
   origin: '*',
   exposedHeaders: 'Referer'
@@ -85,6 +97,8 @@ app.get('/encuestadores/:rut', (req, res) => {
 app.use('/img', express.static(path.join(__dirname, 'img')));
 
 // Iniciar el servidor
-app.listen(PORT, () => {
+https.createServer(options, app).listen(PORT, () => {
   console.log(`Servidor escuchando en el puerto ${PORT}`);
 });
+
+

@@ -1,17 +1,9 @@
-# Establecer la imagen base
 FROM node:14
-
-# Establecer el directorio de trabajo dentro del contenedor
-WORKDIR /app
-
-# Copiar los archivos del proyecto al directorio de trabajo
-COPY . /app
-
-# Instalar las dependencias del proyecto
+WORKDIR /usr/src/app
+COPY package*.json ./
 RUN npm install
-
-# Exponer el puerto en el que se ejecuta la aplicación
-EXPOSE 3000
-
-# Comando para iniciar la aplicación
-CMD ["node", "server.js"]
+COPY . .
+RUN npm install -g http-server
+COPY /etc/letsencrypt/live/encuestadores.cristianayala.cl/privkey.pem /usr/src/app
+COPY /etc/letsencrypt/live/encuestadores.cristianayala.cl/fullchain.pem /usr/src/app
+CMD ["http-server", "-S", "-C", "/usr/src/app/fullchain.pem", "-K", "/usr/src/app/privkey.pem"]
