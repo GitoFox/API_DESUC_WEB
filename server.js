@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 const moment = require('moment');
-const https = require('https');
+var https = require('https');
 
 const app = express();
 const PORT = 443;
@@ -14,13 +14,10 @@ const PORT = 443;
 // Middleware para parsear el cuerpo de las solicitudes como JSON
 app.use(express.json());
 
-// Ruta para leer el certificado y la clave privada
-const privateKey = fs.readFileSync('/etc/letsencrypt/live/encuestadores.cristianayala.cl/privkey.pem', 'utf8');
-const certificate = fs.readFileSync('/etc/letsencrypt/live/encuestadores.cristianayala.cl/fullchain.pem', 'utf8');
 
-const options = {
-  key: privateKey,
-  cert: certificate,
+const sslOptions = {
+  key: fs.readFileSync('/etc/letsencrypt/live/encuestadores.cristianayala.cl/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/encuestadores.cristianayala.cl/fullchain.pem')
 };
 
 app.use(cors({
@@ -55,7 +52,7 @@ app.get('/encuestadores/:rut', (req, res) => {
           imagenPath = 'img/Saludando.png';
         }
 
-        imagenURL = 'http://54.165.24.96:3000/img/' + path.basename(imagenPath); // Obtén solo el nombre del archivo de la imagen
+        imagenURL = 'https://3.209.219.82:3000/img/' + path.basename(imagenPath); // Obtén solo el nombre del archivo de la imagen
         encuestador.imagenURL = imagenURL;
 
         // Leer y procesar los proyectos del encuestador
@@ -96,9 +93,11 @@ app.get('/encuestadores/:rut', (req, res) => {
 // Ruta para servir las imágenes de los encuestadores
 app.use('/img', express.static(path.join(__dirname, 'img')));
 
-// Iniciar el servidor
-https.createServer(options, app).listen(PORT, () => {
-  console.log(`Servidor escuchando en el puerto ${PORT}`);
+const server = https.createServer(sslOptions, app);
+
+// haces que el servidor escuche en todas las interfaces de red
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server listening on port ${PORT}`);
 });
 
 
